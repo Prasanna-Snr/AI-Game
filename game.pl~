@@ -6,7 +6,7 @@ location(lanka, 'You are in Lanka, a big island city with tall buildings and str
 
 % Define dynamic objects that can be modified during runtime
 :- dynamic object/3.
-:- dynamic bag/1. 
+:- dynamic bag/1.
 
 % Facts: Define objects in each location with their uses
 object(rameswaram, helmet, 'A helmet to protect your head from damage.').
@@ -27,21 +27,21 @@ path(kishkindha, south, lanka).
 path(panchavati, east, kishkindha).
 path(panchavati, west, rameswaram).
 path(panchavati, south, lanka).
-path(lanka, east, kishkindha).   
-path(lanka, west, panchavati).   
-path(lanka, north, rameswaram).  
+path(lanka, east, kishkindha).
+path(lanka, west, panchavati).
+path(lanka, north, rameswaram).
 
 % Store the player's current location and bag of picked objects
 :- dynamic current_location/1.
-:- dynamic all_objects/1.  
-current_location(rameswaram). 
+:- dynamic all_objects/1.
+current_location(rameswaram).
 
 % Facts: Define the required objects to fight the enemy
 required_objects([helmet, bulletproof_vest, grenade, ammo, gun, first_aid]).
 
 % Initialize all objects at the start
 initialize_all_objects :-
-    retractall(object(_, _, _)), 
+    retractall(object(_, _, _)),
     assertz(object(rameswaram, helmet, 'A helmet to protect your head from damage.')),
     assertz(object(rameswaram, bulletproof_vest, 'A bulletproof vest to reduce damage from bullets.')),
     assertz(object(kishkindha, grenade, 'A grenade to deal explosive damage.')),
@@ -92,7 +92,7 @@ print_objects([Object-Use|T]) :-
 % Rule: Picking up an object from the current location
 pick(Object) :-
     current_location(Location),
-    object(Location, Object, _),  
+    object(Location, Object, _),
     retract(object(Location, Object, _)),
     assertz(bag(Object)),
     write('You picked up the '), write(Object), write('.'), nl.
@@ -113,35 +113,60 @@ print_bag([Object|T]) :-
     write('- '), write(Object), nl,
     print_bag(T).
 
+
+% Rule: Welcome the player with an engaging message
+welcome :-
+    nl,
+    write('=================================================================='), nl,
+    write('                   ~~~ Welcome to the Adventure! ~~~  '), nl,
+    write('=================================================================='), nl,
+    nl,
+    write('  Ravan has kidnapped Sita and taken her to Lanka!'), nl,
+    write('  Your mission is to rescue her by exploring the land, gathering '), nl,
+    write('  essential items, and facing Ravan in battle.'), nl,
+    nl,
+    write('  Travel through different locations, pick up useful items, and '), nl,
+    write('  be prepared for the final challenge.'), nl,
+    nl,
+    write('  Be brave and strategic. Only the worthy will prevail!'),nl,nl,nl,
+    map,nl,
+    instructions.
+
 % Rule: Showing instructions for the user
 instructions :-
-    write('Available commands:'), nl,
-    write('1. look. - See objects in the current location.'), nl,
-    write('2. move(Direction). - Move to a new location (e.g., move(north)).'), nl,
-    write('3. pick(Object). - Pick up an object from the current location (e.g., pick(helmet)).'), nl,
-    write('4. bag. - Show the contents of your bag.'), nl,
-    write('5. current_location. - Check your current location.'), nl,
-    write('6. describe. - Describe the current location.'), nl,
-    write('7. fight. - Fight the enemy blocking the Lanka.'), nl,
-    write('8. welcome. - Show the game description and instructions.'), nl,
-    write('9. start. - Start the game'), nl,
-    write('10. map. - Display the map of the world.'), nl.
-
-% Welcome the player and show the game description
-welcome :-
-    write('Welcome to the adventure game!'), nl,
-    write('Ravan has kidnapped Sita and kept her in Lanka.'), nl,
-    write('Your goal is to save Sita by collecting all the necessary objects and then fighting the enemy blocking your way to Lanka.'), nl,
     nl,
-    map,
-    instructions.
+    write('=================================================================='), nl,
+    write('                     ~~~ Adventure Game Guide ~~~     '), nl,
+    write('=================================================================='), nl,
+    nl,
+    write('>>> Your goal is to rescue Sita from Ravan.'), nl,
+    write('>>> Collect items and defeat Ravan to win.'), nl,
+    nl,
+    write('--- Available Commands ---'), nl,
+    write('1. look.               -- See objects around you.'), nl,
+    write('2. move(Direction).     -- Move in a direction (e.g., move(north)).'), nl,
+    write('3. pick(Object).        -- Pick up an object (e.g., pick(helmet)).'), nl,
+    write('4. bag.                -- Check the items you have.'), nl,
+    write('5. current_location.    -- Find out where you are.'), nl,
+    write('6. map.                -- View the world map.'), nl,
+    write('7. describe.           -- Describe your location.'), nl,
+    write('8. fight.              -- Fight Ravan (only in Lanka).'), nl,
+    write('9. start.              -- Start or restart the game.'), nl,
+    write('10. welcome.           -- Show these instructions again.'), nl,
+    nl,
+    write('>>> Directions: north, south, east, west'), nl,
+    nl,
+    write('=================================================================='), nl,
+    write('                     Good luck on your journey!        '), nl,
+    write('=================================================================='), nl.
+
 
 % Start the game, clear the bag, and initialize all objects
 start :-
-    retractall(current_location(_)), 
-    retractall(bag(_)), 
-    assert(current_location(rameswaram)),  
-    initialize_all_objects, 
+    retractall(current_location(_)),
+    retractall(bag(_)),
+    assert(current_location(rameswaram)),
+    initialize_all_objects,
     describe_location.
 
 % Rule: Check current location
@@ -164,7 +189,7 @@ fight :-
      SortedPickedObjects == SortedRequiredObjects ->
         write('Congratulations! You saved Sita and won the game!'), nl
     ;
-        write('You lost. Please play again.'), nl
+        write('You were defeated. Try again.'), nl
     ).
 
 % Rule: Display the map
@@ -175,7 +200,7 @@ map :-
     write('        /        |        \\     '),nl,
     write('       /         |         \\    '),nl,
     write('  [north]        |        [south] '), nl,
-    write('Panchavati-------+---------Lanka'), nl,
+    write('Panchavat--------+---------Lanka'), nl,
     write('       \\         |          /     '), nl,
     write('        \\        |         /     '),nl,
     write('         \\       |        /      '),nl,
