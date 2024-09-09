@@ -175,7 +175,7 @@ map :-
     write('        /        |        \\     '),nl,
     write('       /         |         \\    '),nl,
     write('  [north]        |        [south] '), nl,
-    write('Panchavat--------+---------Lanka'), nl,
+    write('Panchavati-------+---------Lanka'), nl,
     write('       \\         |          /     '), nl,
     write('        \\        |         /     '),nl,
     write('         \\       |        /      '),nl,
