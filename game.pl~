@@ -1,0 +1,166 @@
+% Facts: Define locations and their descriptions
+location(rameswaram, 'You are in Rameswaram, a seaside town with simple houses and wide sandy beaches.').
+location(kishkindha, 'You are in Kishkindha, a hilly place with caves and homes built on the rocks and trees.').
+location(panchavati, 'You are in Panchavati, a peaceful forest area with small huts and open spaces.').
+location(lanka, 'You are in Lanka, a big island city with tall buildings and strong walls.').
+
+% Define dynamic objects that can be modified during runtime
+:- dynamic object/3.
+:- dynamic bag/1.  % Track picked objects
+
+% Facts: Define objects in each location with their uses
+object(rameswaram, helmet, 'A helmet to protect your head from damage.').
+object(rameswaram, bulletproof_vest, 'A bulletproof vest to reduce damage from bullets.').
+object(kishkindha, grenade, 'A grenade to deal explosive damage.').
+object(kishkindha, ammo, 'Ammo to reload your weapons.').
+object(panchavati, gun, 'A gun to shoot enemies.').
+object(panchavati, first_aid, 'A first aid kit to heal yourself.').
+object(lanka, trophy, 'A trophy representing victory.').
+
+% Define connections between locations
+path(rameswaram, east, kishkindha).
+path(rameswaram, north, panchavati).
+path(rameswaram, south, lanka).
+path(kishkindha, west, rameswaram).
+path(kishkindha, north, panchavati).
+path(kishkindha, south, lanka).
+path(panchavati, east, kishkindha).
+path(panchavati, west, rameswaram).
+path(panchavati, south, lanka).
+path(lanka, east, kishkindha).   % New path
+path(lanka, west, panchavati).   % New path
+path(lanka, north, rameswaram).  % New path
+
+% Store the player's current location and bag of picked objects
+:- dynamic current_location/1.
+:- dynamic all_objects/1.  % Track all objects
+current_location(rameswaram).  % Starting location
+
+% Facts: Define the required objects to fight the enemy
+required_objects([helmet, bulletproof_vest, grenade, ammo, gun, first_aid]).
+
+% Initialize all objects at the start
+initialize_all_objects :-
+    retractall(object(_, _, _)),  % Remove all object facts
+    assertz(object(rameswaram, helmet, 'A helmet to protect your head from damage.')),
+    assertz(object(rameswaram, bulletproof_vest, 'A bulletproof vest to reduce damage from bullets.')),
+    assertz(object(kishkindha, grenade, 'A grenade to deal explosive damage.')),
+    assertz(object(kishkindha, ammo, 'Ammo to reload your weapons.')),
+    assertz(object(panchavati, gun, 'A gun to shoot enemies.')),
+    assertz(object(panchavati, first_aid, 'A first aid kit to heal yourself.')),
+    assertz(object(lanka, trophy, 'A trophy representing victory.')).
+
+% Rule: Describing the current location
+describe_location :-
+    current_location(Location),
+    location(Location, Description),
+    write(Description), nl,
+    (Location == lanka ->
+        write('Ravan and his army are blocking your way! Make sure you have picked up all the necessary objects to fight them.'), nl
+    ;
+        true
+    ).
+
+% Rule: Moving between locations
+move(Direction) :-
+    current_location(CurrentLocation),
+    (path(CurrentLocation, Direction, NewLocation) ->
+        retractall(current_location(_)),  % Remove all previous location facts
+        assert(current_location(NewLocation)),  % Set the new location
+        describe_location
+    ;
+        write('You cannot go that way.'), nl
+    ).
+
+% Rule: Look at the current location and show objects there
+look :-
+    current_location(Location),
+    findall(Object-Use, object(Location, Object, Use), Objects),
+    (Objects \= [] ->
+        write('You see the following objects here: '), nl,
+        print_objects(Objects)
+    ;
+        write('There are no objects here.'), nl
+    ).
+
+% Helper rule: Printing objects and their uses in the location
+print_objects([]).
+print_objects([Object-Use|T]) :-
+    write('- '), write(Object), write(' ('), write(Use), write(')'), nl,
+    print_objects(T).
+
+% Rule: Picking up an object from the current location
+pick(Object) :-
+    current_location(Location),
+    object(Location, Object, _Use),  % _Use is intentionally ignored
+    retract(object(Location, Object, _Use)),
+    assertz(bag(Object)),
+    write('You picked up the '), write(Object), write('.'), nl.
+
+% Rule: Showing the contents of the bag
+bag :-
+    findall(Object, bag(Object), Objects),
+    (Objects \= [] ->
+        write('You have the following items in your bag: '), nl,
+        print_bag(Objects)
+    ;
+        write('Your bag is empty.'), nl
+    ).
+
+% Helper rule: Printing the contents of the bag
+print_bag([]).
+print_bag([Object|T]) :-
+    write('- '), write(Object), nl,
+    print_bag(T).
+
+% Rule: Showing instructions for the user
+instructions :-
+    write('Available commands:'), nl,
+    write('1. look. - See objects in the current location.'), nl,
+    write('2. move(Direction). - Move to a new location (e.g., move(north)).'), nl,
+    write('3. pick(Object). - Pick up an object from the current location (e.g., pick(helmet)).'), nl,
+    write('4. bag. - Show the contents of your bag.'), nl,
+    write('5. current_location. - Check your current location.'), nl,
+    write('6. describe. - Describe the current location.'), nl,
+    write('7. fight. - Fight the enemy blocking the Lanka.'), nl,
+    write('8. welcome. - Show the game description and instructions.'), nl,
+    write('9. start. - Start the game'), nl.
+
+% Welcome the player and show the game description
+welcome :-
+    write('Welcome to the adventure game!'), nl,
+    write('Ravan has kidnapped Sita and kept her in Lanka.'), nl,
+    write('Your goal is to save Sita by collecting all the necessary objects and then fighting the enemy blocking your way to Lanka.'), nl,
+    nl, % Add a blank line for better readability
+    instructions. % Show the instructions, without calling describe_location
+
+% Start the game, clear the bag, and initialize all objects
+start :-
+    retractall(current_location(_)),  % Remove all previous location facts
+    retractall(bag(_)),  % Clear the bag
+    assert(current_location(rameswaram)),  % Set the location to Rameswaram
+    initialize_all_objects,  % Initialize all objects
+    describe_location.
+
+% Rule: Check current location
+current_location :-
+    current_location(Location),
+    location(Location, Description),
+    write('You are currently at: '), write(Description), nl.
+
+% Rule: Describe the current location (same as describe_location/0)
+describe :-
+    describe_location.
+
+% Rule: Fight the enemy if at Lanka
+fight :-
+    current_location(lanka),
+    findall(Object, bag(Object), PickedObjects),
+    required_objects(RequiredObjects),
+    (sort(PickedObjects, SortedPickedObjects),
+     sort(RequiredObjects, SortedRequiredObjects),
+     SortedPickedObjects == SortedRequiredObjects ->
+        write('Congratulations! You saved Sita and won the game!'), nl
+    ;
+        write('You lost. Please play again.'), nl
+    ).
