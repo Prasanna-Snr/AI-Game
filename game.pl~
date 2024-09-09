@@ -6,7 +6,7 @@ location(lanka, 'You are in Lanka, a big island city with tall buildings and str
 
 % Define dynamic objects that can be modified during runtime
 :- dynamic object/3.
-:- dynamic bag/1.  % Track picked objects
+:- dynamic bag/1. 
 
 % Facts: Define objects in each location with their uses
 object(rameswaram, helmet, 'A helmet to protect your head from damage.').
@@ -27,21 +27,21 @@ path(kishkindha, south, lanka).
 path(panchavati, east, kishkindha).
 path(panchavati, west, rameswaram).
 path(panchavati, south, lanka).
-path(lanka, east, kishkindha).   % New path
-path(lanka, west, panchavati).   % New path
-path(lanka, north, rameswaram).  % New path
+path(lanka, east, kishkindha).   
+path(lanka, west, panchavati).   
+path(lanka, north, rameswaram).  
 
 % Store the player's current location and bag of picked objects
 :- dynamic current_location/1.
-:- dynamic all_objects/1.  % Track all objects
-current_location(rameswaram).  % Starting location
+:- dynamic all_objects/1.  
+current_location(rameswaram). 
 
 % Facts: Define the required objects to fight the enemy
 required_objects([helmet, bulletproof_vest, grenade, ammo, gun, first_aid]).
 
 % Initialize all objects at the start
 initialize_all_objects :-
-    retractall(object(_, _, _)),  % Remove all object facts
+    retractall(object(_, _, _)), 
     assertz(object(rameswaram, helmet, 'A helmet to protect your head from damage.')),
     assertz(object(rameswaram, bulletproof_vest, 'A bulletproof vest to reduce damage from bullets.')),
     assertz(object(kishkindha, grenade, 'A grenade to deal explosive damage.')),
@@ -92,8 +92,8 @@ print_objects([Object-Use|T]) :-
 % Rule: Picking up an object from the current location
 pick(Object) :-
     current_location(Location),
-    object(Location, Object, _Use),  % _Use is intentionally ignored
-    retract(object(Location, Object, _Use)),
+    object(Location, Object, _),  
+    retract(object(Location, Object, _)),
     assertz(bag(Object)),
     write('You picked up the '), write(Object), write('.'), nl.
 
@@ -124,22 +124,24 @@ instructions :-
     write('6. describe. - Describe the current location.'), nl,
     write('7. fight. - Fight the enemy blocking the Lanka.'), nl,
     write('8. welcome. - Show the game description and instructions.'), nl,
-    write('9. start. - Start the game'), nl.
+    write('9. start. - Start the game'), nl,
+    write('10. map. - Display the map of the world.'), nl.
 
 % Welcome the player and show the game description
 welcome :-
     write('Welcome to the adventure game!'), nl,
     write('Ravan has kidnapped Sita and kept her in Lanka.'), nl,
     write('Your goal is to save Sita by collecting all the necessary objects and then fighting the enemy blocking your way to Lanka.'), nl,
-    nl, % Add a blank line for better readability
-    instructions. % Show the instructions, without calling describe_location
+    nl,
+    map,
+    instructions.
 
 % Start the game, clear the bag, and initialize all objects
 start :-
-    retractall(current_location(_)),  % Remove all previous location facts
-    retractall(bag(_)),  % Clear the bag
-    assert(current_location(rameswaram)),  % Set the location to Rameswaram
-    initialize_all_objects,  % Initialize all objects
+    retractall(current_location(_)), 
+    retractall(bag(_)), 
+    assert(current_location(rameswaram)),  
+    initialize_all_objects, 
     describe_location.
 
 % Rule: Check current location
@@ -164,3 +166,18 @@ fight :-
     ;
         write('You lost. Please play again.'), nl
     ).
+
+% Rule: Display the map
+map :-
+
+    write('               [east]              '),nl,
+    write('         ___ Kishkindha___      '),nl,
+    write('        /        |        \\     '),nl,
+    write('       /         |         \\    '),nl,
+    write('  [north]        |        [south] '), nl,
+    write('Panchavat--------+---------Lanka'), nl,
+    write('       \\         |          /     '), nl,
+    write('        \\        |         /     '),nl,
+    write('         \\       |        /      '),nl,
+    write('          \\ _Rameswaram_/        '),nl,
+    write('               [west]           '),nl, nl.
